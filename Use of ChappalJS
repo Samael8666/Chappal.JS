@@ -1,0 +1,60 @@
+const ThemeContext = createContext('light');
+
+class App extends ReactiveUIComponent {
+  constructor(props) {
+    super(props);
+    this.state = { theme: 'light' };
+  }
+
+  toggleTheme = () => {
+    this.setState({ theme: this.state.theme === 'light' ? 'dark' : 'light' });
+  }
+
+  render() {
+    return createElement(ThemeContext.Provider, { value: this.state.theme },
+      createElement(Fragment, null,
+        createElement('button', { onClick: this.toggleTheme }, 'Toggle Theme'),
+        createElement(ThemedButton),
+        createElement(PortalExample),
+        createElement(MyList)
+      )
+    );
+  }
+}
+
+class ThemedButton extends ReactiveUIComponent {
+  static contextType = ThemeContext;
+
+  render() {
+    const theme = this.getContext(ThemeContext);
+    return createElement('button', { 
+      style: { 
+        background: theme === 'light' ? '#fff' : '#000',
+        color: theme === 'light' ? '#000' : '#fff'
+      } 
+    }, 'Themed Button');
+  }
+}
+
+class PortalExample extends ReactiveUIComponent {
+  constructor(props) {
+    super(props);
+    this.portalContainer = document.createElement('div');
+    document.body.appendChild(this.portalContainer);
+  }
+
+  render() {
+    return createPortal(
+      createElement('div', null, 'This is rendered in a portal'),
+      this.portalContainer
+    );
+  }
+
+  componentWillUnmount() {
+    document.body.removeChild(this.portalContainer);
+  }
+}
+
+const app = new App();
+app.mount();
+document.body.appendChild(app.element);
